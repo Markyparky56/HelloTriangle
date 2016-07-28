@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <vector>
 #include <cstring>
+#include <set>
 
 #include "VDeleter.hpp"
 
@@ -22,10 +23,11 @@ void DestroyDebugReportCallbackEXT(
 struct QueueFamilyIndices
 {
     int graphicsFamily = -1;
+    int presentFamily = -1;
 
     bool isComplete()
     {
-        return graphicsFamily >= 0;
+        return graphicsFamily >= 0 && presentFamily >= 0;
     }
 };
 
@@ -41,6 +43,7 @@ private:
     void setupDebugCallback();
     void pickPhysicalDevice();
     void createLogicalDevice();
+    void createSurface();
     bool checkValidationLayerSupport();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
     bool isDeviceSuitable(VkPhysicalDevice device);
@@ -67,6 +70,8 @@ private:
     VkPhysicalDevice physicalDevice;
     VDeleter<VkDevice> device { vkDestroyDevice };
     VkQueue graphicsQueue;
+    VkQueue presentQueue;
+    VDeleter<VkSurfaceKHR> surface { instance, vkDestroySurfaceKHR };
 
     const std::vector<const char*> validationLayers =
     {
