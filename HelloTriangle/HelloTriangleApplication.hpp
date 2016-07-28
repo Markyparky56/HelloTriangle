@@ -19,6 +19,16 @@ void DestroyDebugReportCallbackEXT(
     VkDebugReportCallbackEXT callback,
     const VkAllocationCallbacks *pAllocator);
 
+struct QueueFamilyIndices
+{
+    int graphicsFamily = -1;
+
+    bool isComplete()
+    {
+        return graphicsFamily >= 0;
+    }
+};
+
 class HelloTriangleApplication
 {
 public:
@@ -31,6 +41,7 @@ private:
     void setupDebugCallback();
     void pickPhysicalDevice();
     bool checkValidationLayerSupport();
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
     bool isDeviceSuitable(VkPhysicalDevice device);
     std::vector<const char*> getRequiredExtensions();
     void mainLoop();
