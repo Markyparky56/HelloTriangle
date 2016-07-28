@@ -40,6 +40,7 @@ private:
     void createInstance();
     void setupDebugCallback();
     void pickPhysicalDevice();
+    void createLogicalDevice();
     bool checkValidationLayerSupport();
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
     bool isDeviceSuitable(VkPhysicalDevice device);
@@ -61,9 +62,11 @@ private:
         return VK_FALSE;
     }
 
-    VDeleter<VkInstance> instance{ vkDestroyInstance };
+    VDeleter<VkInstance> instance { vkDestroyInstance };
     VDeleter<VkDebugReportCallbackEXT> callback { instance, DestroyDebugReportCallbackEXT };
     VkPhysicalDevice physicalDevice;
+    VDeleter<VkDevice> device { vkDestroyDevice };
+    VkQueue graphicsQueue;
 
     const std::vector<const char*> validationLayers =
     {
