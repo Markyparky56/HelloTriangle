@@ -31,6 +31,13 @@ struct QueueFamilyIndices
     }
 };
 
+struct SwapChainSupportDetails
+{
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+};
+
 class HelloTriangleApplication
 {
 public:
@@ -45,8 +52,11 @@ private:
     void createLogicalDevice();
     void createSurface();
     bool checkValidationLayerSupport();
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
     bool isDeviceSuitable(VkPhysicalDevice device);
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     std::vector<const char*> getRequiredExtensions();
     void mainLoop();
 
@@ -58,12 +68,8 @@ private:
         int32_t code,
         const char *layerPrefix,
         const char *msg,
-        void *userData)
-    {
-        std::cerr << "Validation layer: " << msg << std::endl;
+        void *userData);
 
-        return VK_FALSE;
-    }
 
     VDeleter<VkInstance> instance { vkDestroyInstance };
     VDeleter<VkDebugReportCallbackEXT> callback { instance, DestroyDebugReportCallbackEXT };
@@ -76,6 +82,11 @@ private:
     const std::vector<const char*> validationLayers =
     {
         "VK_LAYER_LUNARG_standard_validation"
+    };
+
+    const std::vector<const char*> deviceExtensions = 
+    {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
 #ifdef NDEBUG

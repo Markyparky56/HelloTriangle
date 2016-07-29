@@ -21,6 +21,7 @@ void HelloTriangleApplication::initVulkan()
 {
     createInstance();
     setupDebugCallback();
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
 }
@@ -144,7 +145,8 @@ void HelloTriangleApplication::createLogicalDevice()
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = 0;
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
     if (enableValidationLayers)
     {
@@ -168,7 +170,81 @@ void HelloTriangleApplication::createLogicalDevice()
 bool HelloTriangleApplication::isDeviceSuitable(VkPhysicalDevice device)
 {
     QueueFamilyIndices indices = findQueueFamilies(device);
-    return indices.isComplete();
+
+    bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+    bool swapChainAdequate = false;
+    if (extensionsSupported)
+    {
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+    }
+
+    return indices.isComplete() && extensionsSupported && swapChainAdequate;
+}
+
+SwapChainSupportDetails HelloTriangleApplication::querySwapChainSupport(VkPhysicalDevice device)
+{
+    SwapChainSupportDetails details;
+
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+    uint32_t formatCount;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+
+    if (formatCount != 0)
+    {
+        details.formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+    }
+
+    uint32_t presentModeCount;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+
+    if (presentModeCount != 0)
+    {
+        details.presentModes.resize(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+    }
+
+    return details;
+}
+
+VkSurfaceFormatKHR HelloTriangleApplication::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+{
+    // We can choose what format we want
+    if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED)
+    {
+        return{ VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
+    }
+
+    // Else try to find our preferred format
+    for (const auto& availableFormat : availableFormats)
+    {
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        {
+            return availableFormat;
+        }
+    }
+
+    // Else just go with the first available
+    return availableFormats[0];
+}
+
+bool HelloTriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device)
+{
+    uint32_t extensionCount;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+    std::set<std::string> requireExtensions(deviceExtensions.begin(), deviceExtensions.end());
+    for (const auto& extension : availableExtensions)
+    {
+        requireExtensions.erase(extension.extensionName);
+    }
+
+    return requireExtensions.empty();
 }
 
 bool HelloTriangleApplication::checkValidationLayerSupport()
@@ -265,6 +341,21 @@ void HelloTriangleApplication::mainLoop()
     {
         glfwPollEvents();
     }
+}
+
+VkBool32 HelloTriangleApplication::debugCallback(
+    VkDebugReportFlagsEXT flags, 
+    VkDebugReportObjectTypeEXT objType, 
+    uint64_t obj, 
+    size_t location, 
+    int32_t code, 
+    const char * layerPrefix, 
+    const char * msg, 
+    void * userData)
+{
+    std::cerr << "Validation layer: " << msg << std::endl;
+
+    return VK_FALSE;
 }
 
 VkResult CreateDebugReportCallbackEXT(
