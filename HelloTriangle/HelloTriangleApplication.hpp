@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstring>
 #include <set>
+#include <algorithm>
 
 #include "VDeleter.hpp"
 
@@ -51,12 +52,17 @@ private:
     void pickPhysicalDevice();
     void createLogicalDevice();
     void createSurface();
+    void createSwapChain();
+    void createImageViews();
+    void createGraphicsPipeline();
     bool checkValidationLayerSupport();
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
     bool isDeviceSuitable(VkPhysicalDevice device);
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
+    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     std::vector<const char*> getRequiredExtensions();
     void mainLoop();
 
@@ -78,6 +84,11 @@ private:
     VkQueue graphicsQueue;
     VkQueue presentQueue;
     VDeleter<VkSurfaceKHR> surface { instance, vkDestroySurfaceKHR };
+    VDeleter<VkSwapchainKHR> swapChain { device, vkDestroySwapchainKHR };
+    std::vector<VkImage> swapChainImages;
+    VkFormat swapChainImageFormat;
+    VkExtent2D swapChainExtent;
+    std::vector<VDeleter<VkImageView>> swapChainImageViews;
 
     const std::vector<const char*> validationLayers =
     {
@@ -95,8 +106,8 @@ private:
     const bool enableValidationLayers = true;
 #endif
 
-    const int Width = 800;
-    const int Height = 600;
+    const uint32_t Width = 1280;
+    const uint32_t Height = 720;
     GLFWwindow *window;
 };
 

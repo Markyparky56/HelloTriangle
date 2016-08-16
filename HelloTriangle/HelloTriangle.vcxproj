@@ -26,6 +26,10 @@
     <ClInclude Include="HelloTriangleApplication.hpp" />
     <ClInclude Include="VDeleter.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="frag.shader" />
+    <None Include="vert.shader" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{33042660-1ea1-46aa-809d-d5ab2836ef3e}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -109,7 +113,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;/NODEFAULTLIB:MSVCRT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>C:\local\glm;C:\local\glfw-3.2.bin.WIN64\include;C:\VulkanSDK\1.0.17.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
